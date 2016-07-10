@@ -1,21 +1,13 @@
 package application;
 
-import java.io.*;
-
 public class Misc {
 	public static void main (String[] args) {
-		String filepath = "/home/matt/java/workspace/BarcodeApp/src/application/test.txt";
-		filepath = "./test.txt";
-		BufferedReader br = null;
-		String line = "";
+		/*
+		short number = 0b11011001100;
+		System.out.println(Integer.toBinaryString(number));
+		*/
 		
-		try {
-			br = new BufferedReader(new FileReader(filepath));
-			while ((line = br.readLine()) != null) {
-				System.out.println(line);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		Code128BEncoder ce = new Code128BEncoder();
+		System.out.println(ce.convertTo128B("hello"));
 	}
 }

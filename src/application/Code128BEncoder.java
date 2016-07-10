@@ -6,11 +6,14 @@ import java.io.*;
 
 public class Code128BEncoder {
 	
-	private HashMap<Integer, String> barPatterns;
+	private HashMap<Byte, String> barPatterns;
+	private String quietZone = "0000000000";
+	private String start128BCode = "11010010000";
+	private String stopCode = "1100011101011"; // including termination bar "...11"
 	
 	public Code128BEncoder() {
 		barPatterns = new HashMap<>(95);
-		addCSVCodes("./128B.txt");
+		readEncodingData("./ascii_to_code.csv");
 	}
 	
 	public static void main (String[] args) {
@@ -19,25 +22,50 @@ public class Code128BEncoder {
 	}
 	
 	public void go() {
-		String start = "PJJ123C";
-		ArrayList<Byte> codes = encodeToASCII(start);
-		byte checkValue = calculateCheckSum(codes);
-		codes.add(checkValue);
-		// TODO convert to bit patterns
-		// TODO add guard patterns, quiet zones
+		String start = "PJJ123C"; //TODO this is just a test string, get user input
+		String output = convertTo128B(start); 
+		System.out.println(output);
 	} 
 
-	private void addCSVCodes (String filePath) {
+	public String convertTo128B (String input) {
 		/*
-		 * Adds the 128B ascii -> barcode
-		 * info to barPatterns
+		 * This is the meat of this program. It takes
+		 * the starting string all the way to a binary
+		 * string representing the barcode's bars.
+		 */
+		
+		ArrayList<Byte> asciiVals = encodeToASCII(input);
+		byte checkValue = calculateCheckSum(asciiVals);
+		asciiVals.add(checkValue);
+		
+		StringBuilder bitPatterns = new StringBuilder();
+		bitPatterns.append(quietZone);
+		bitPatterns.append(start128BCode);
+		
+		for (byte b : asciiVals) {
+			String p = asciiValueToBitPattern(b);
+			bitPatterns.append(p);
+		}
+		
+		bitPatterns.append(stopCode);
+		bitPatterns.append(quietZone);
+		return bitPatterns.toString();
+	}
+	
+	private String asciiValueToBitPattern (byte input) {
+		return barPatterns.get(input);
+	}
+	
+	private void readEncodingData (String filePath) {
+		/*
+		 * Ingest data for converting ASCII -> 128B bit patterns
 		 */
 		String line = "";
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(filePath));
 			while ((line = br.readLine()) != null) {
 				String[] pair = line.split(",");
-				barPatterns.put(Integer.parseInt(pair[0]), pair[1]);
+				barPatterns.put(Byte.parseByte(pair[0]), pair[1]);
 			}
 			br.close();
 		} catch (Exception e) {
@@ -45,7 +73,6 @@ public class Code128BEncoder {
 		}
 	}	
 
-	
 	private ArrayList<Byte> encodeToASCII (String input) {
 		ArrayList<Byte> codes = new ArrayList<>();
 		byte[] byteArr = input.getBytes(StandardCharsets.US_ASCII);
