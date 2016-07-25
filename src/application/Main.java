@@ -10,8 +10,6 @@ public class Main extends Application {
 	@Override
 	public void start(Stage primaryStage) {
 		try {
-			//Code128BEncoder ce = new Code128BEncoder(); // TODO is this the right place to start this?
-			
 			AnchorPane root = (AnchorPane) FXMLLoader.load(getClass().getResource("BarcodePane.fxml"));
 			Scene scene = new Scene(root,400,400);
 			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
